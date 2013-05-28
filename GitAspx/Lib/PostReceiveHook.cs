@@ -21,7 +21,7 @@ namespace GitAspx.Lib {
 					UpdateFogBugz(rp, commands);
 				}
 			}
-			catch {}
+			catch { }
 		}
 
 		// To keep this simple I only look at the head commit and parse the bugzid. 
@@ -38,12 +38,32 @@ namespace GitAspx.Lib {
 
 					foreach (var change in commit.Changes)
 					{
-						var fileName = change.Name;
-						var fileOldSha = change.ReferenceObject.Hash;
-						var fileNewSha = change.ChangedObject.Hash;
-						var hasBaseParent = change.ReferenceCommit.Hash;
+						if (change == null)
+						{
+							continue;
+						}
 
-						SubmitData(fileOldSha, hasBaseParent, fileNewSha, hashBase, bugzid, fileName, repository.Name);
+						var fileName = change.Name;
+
+						var fileOldSha = string.Empty;
+						if (change.ReferenceObject != null)
+						{
+							fileOldSha = change.ReferenceObject.Hash;
+						}
+
+						var fileNewSha = string.Empty;
+						if (change.ChangedObject != null)
+						{
+							fileNewSha = change.ChangedObject.Hash;
+						}
+
+						var hashBaseParent = string.Empty;
+						if (change.ReferenceCommit != null)
+						{
+							hashBaseParent = change.ReferenceCommit.Hash;
+						}
+
+						SubmitData(fileOldSha, hashBaseParent, fileNewSha, hashBase, bugzid, fileName, repository.Name);
 					}
 				}
 			}
@@ -53,11 +73,11 @@ namespace GitAspx.Lib {
 			var r1 = string.Format("hp={0};hpb={1}", fileOldSha, hashBaseParent);
 			var r2 = string.Format("h={0};hb={1}", fileNewSha, hashBase);
 
-			var postUri = string.Format("{0}/cvsSubmit.asp?ixBug={1}&sFile={2}&sPrev={3}&sNew={4}&sRepo={5}", fogBugzApi, bugId, fileName, r1, r2, repositoryName);
+			var postUri = string.Format("{0}?ixBug={1}&sFile={2}&sPrev={3}&sNew={4}&sRepo={5}", fogBugzApi, bugId, fileName, r1, r2, repositoryName);
 
 			var myRequest = WebRequest.Create(postUri);
-			var myResponse = myRequest.GetResponse();
-			myResponse.Close();
+
+			myRequest.BeginGetResponse(null, null);
 		}
 
 		public string ParseBugzId(string message) {
