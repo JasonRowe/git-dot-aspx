@@ -27,6 +27,8 @@ namespace GitAspx.Lib {
 		public DirectoryInfo RepositoriesDirectory { get; set; }
 		public bool UploadPack { get; set; }
 		public bool ReceivePack { get; set; }
+		public string FogBugzApi { get; set; }
+		public bool PostRecieveHook { get; set; }
 
 		public static AppSettings FromAppConfig() {
 			var settings = new AppSettings();
@@ -47,9 +49,13 @@ namespace GitAspx.Lib {
 
 			var uploadPackRaw = ConfigurationManager.AppSettings["UploadPack"];
 			var receivePackRaw = ConfigurationManager.AppSettings["ReceivePack"];
+			var postRecieveHookRaw = ConfigurationManager.AppSettings["PostReceiveHook"];
+			
+			settings.FogBugzApi = ConfigurationManager.AppSettings["FogbugzUri"];
 
 			bool uploadpack;
 			bool receivePack;
+			bool postRecieveHook;
 
 			if (!string.IsNullOrEmpty(uploadPackRaw) && bool.TryParse(uploadPackRaw, out uploadpack)) {
 				settings.UploadPack = uploadpack;
@@ -57,6 +63,11 @@ namespace GitAspx.Lib {
 
 			if (!string.IsNullOrEmpty(receivePackRaw) && bool.TryParse(receivePackRaw, out receivePack)) {
 				settings.ReceivePack = receivePack;
+			}
+
+			if (!string.IsNullOrEmpty(postRecieveHookRaw) && bool.TryParse(postRecieveHookRaw, out postRecieveHook))
+			{
+				settings.PostRecieveHook = postRecieveHook;
 			}
 
 			return settings;

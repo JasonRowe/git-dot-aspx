@@ -45,8 +45,13 @@ namespace GitAspx.Lib {
 				return null;
 			}
 
-			//return Repository.Open(directory);
-			return new Repository(new DirectoryInfo(directory));
+			var repo = new Repository(new DirectoryInfo(directory));
+
+			if (appSettings.PostRecieveHook) {
+				repo.PostRecieveHook = new PostReceiveHook(appSettings.FogBugzApi, repo);
+			}
+
+			return repo;
 		}
 
 		public DirectoryInfo GetRepositoriesDirectory() {

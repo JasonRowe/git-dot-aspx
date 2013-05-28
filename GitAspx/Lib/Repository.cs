@@ -40,6 +40,11 @@ namespace GitAspx.Lib {
 			using (var repository = GetRepository()) {
 				var pack = new ReceivePack(repository);
 				pack.setBiDirectionalPipe(false);
+
+				if (PostRecieveHook != null) {
+					pack.setPostReceiveHook(PostRecieveHook);
+				}
+				
 				pack.receive(inputStream, outputStream, outputStream);
 			}
 		}
@@ -79,6 +84,8 @@ namespace GitAspx.Lib {
 		public string FullPath {
 			get { return directory.FullName; }
 		}
+
+		public PostReceiveHook PostRecieveHook { get; set; }
 
 		public string GitDirectory() {
 			if(FullPath.EndsWith(".git", StringComparison.OrdinalIgnoreCase)) {
