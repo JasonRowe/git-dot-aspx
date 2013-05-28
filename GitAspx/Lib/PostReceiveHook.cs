@@ -1,11 +1,10 @@
-namespace GitAspx.Lib
-{
+namespace GitAspx.Lib {
 	using System;
 	using System.Collections.Generic;
 	using System.Net;
 	using GitSharp.Core.Transport;
 
-	public class PostReceiveHook : IPostReceiveHook{
+	public class PostReceiveHook : IPostReceiveHook {
 		readonly string fogBugzApi;
 		readonly Repository repository;
 
@@ -22,35 +21,23 @@ namespace GitAspx.Lib
 					UpdateFogBugz(rp, commands);
 				}
 			}
-			catch
-			{
-				//TODO add log
-			}
+			catch {}
 		}
 
-		/// <summary>
-		/// To keep this simple I only look at the head commit and parse the bugzid. 
-		/// </summary>
-		/// <param name="rp"></param>
-		/// <param name="commands"></param>
+		// To keep this simple I only look at the head commit and parse the bugzid. 
 		void UpdateFogBugz(ReceivePack rp, ICollection<ReceiveCommand> commands) {
-			//TODO walk through all changes in commit and handle all bugzid updates
-
 			using (var gitRepo = new GitSharp.Repository(repository.FullPath))
 			{
 				var commit = gitRepo.Head.CurrentCommit;
 
 				if (commit != null && commit.Message != null && commit.Message.ToLower().Contains("bugzid:"))
 				{
-
 					var bugzid = ParseBugzId(commit.Message);
 
 					var hashBase = commit.Hash;
 
-					//look through the current changes being committed
 					foreach (var change in commit.Changes)
 					{
-
 						var fileName = change.Name;
 						var fileOldSha = change.ReferenceObject.Hash;
 						var fileNewSha = change.ChangedObject.Hash;
@@ -63,7 +50,6 @@ namespace GitAspx.Lib
 		}
 
 		void SubmitData(string fileOldSha, string hashBaseParent, string fileNewSha, string hashBase, string bugId, string fileName, string repositoryName) {
-			//# Build the FogBugz URI
 			var r1 = string.Format("hp={0};hpb={1}", fileOldSha, hashBaseParent);
 			var r2 = string.Format("h={0};hb={1}", fileNewSha, hashBase);
 
@@ -75,7 +61,6 @@ namespace GitAspx.Lib
 		}
 
 		public string ParseBugzId(string message) {
-
 			if (string.IsNullOrEmpty(message))
 			{
 				return string.Empty;
